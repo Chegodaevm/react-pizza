@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactPaginate from 'react-paginate';
-import { useDispatch } from 'react-redux';
 import styles from './Pagination.module.scss';
 
 type PaginationProps = {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   selectFilter,
   setCategoryId,
@@ -8,7 +8,7 @@ import {
 } from '../redux/slices/filterSlice';
 import qs from 'qs';
 import { useNavigate } from 'react-router-dom';
-import { fetchPizzas, selectPizzaData } from '../redux/slices/pizzaSlice';
+import { fetchPizzas, selectPizzaData, TFetchPizzasArgs } from '../redux/slices/pizzaSlice';
 
 // import components
 import Categories from '../components/Categories';
@@ -16,6 +16,7 @@ import Pagination from '../components/Pagination';
 import { PizzaBlock } from '../components/PizzaBlock';
 import Skeleton from '../components/PizzaBlock/Skeleton';
 import Sort, { list } from '../components/Sort';
+import { useAppDispatch } from '../redux/store';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const Home: React.FC = () => {
   const isMounted = React.useRef(false);
 
   // redux filter
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { sort, categoryId, currentPage, searchValue } = useSelector(selectFilter);
   const { items, status } = useSelector(selectPizzaData);
 
@@ -34,13 +35,12 @@ const Home: React.FC = () => {
     const sortBy = sort.sortProperty.replace('-', '');
 
     dispatch(
-      // @ts-ignore
       fetchPizzas({
         order,
         category,
         search,
         sortBy,
-        currentPage,
+        currentPage: String(currentPage),
       }),
     );
   };
@@ -56,20 +56,27 @@ const Home: React.FC = () => {
       navigate(`?${queryString}`);
     }
 
+    if (!window.location.search) {
+      dispatch(fetchPizzas({} as TFetchPizzasArgs));
+    }
+
     isMounted.current = true;
   }, [categoryId, sort, searchValue, currentPage, navigate]);
 
   // If there was a first render, check the parameters and save in redux
   React.useEffect(() => {
     if (window.location.search) {
-      const params = qs.parse(window.location.search.substring(1));
+      const params = qs.parse(window.location.search.substring(1)) as unknown as TFetchPizzasArgs;
 
-      const sort = list.find((obj) => obj.sortProperty === params.sortProperty);
+      const sort = list.find((obj) => obj.sortProperty === params.sortBy);
+      console.log(params);
 
       dispatch(
         setFilters({
-          ...params,
-          sort,
+          sort: sort ? sort : list[0],
+          searchValue: params.search,
+          categoryId: Number(params.category),
+          currentPage: Number(params.currentPage),
         }),
       );
 

@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { addItem, minusItem, removeItem } from '../redux/slices/cartSlice';
 
 type CartItemProps = {
-  id: number;
+  id: string;
   title: string;
   type: string;
   size: number;
@@ -20,15 +20,15 @@ const CartItem: React.FC<CartItemProps> = ({ id, title, type, size, price, count
         id,
         size,
         type,
-      }),
+      } as CartItemProps),
     );
   };
   const onClickMinus = () => {
-    dispatch(minusItem({ id, size, type }));
+    dispatch(minusItem({ id, size, type } as CartItemProps));
   };
   const onClickRemove = () => {
     if (window.confirm('Удалить товар?')) {
-      dispatch(removeItem({ size, type }));
+      dispatch(removeItem({ size, type } as CartItemProps));
     }
   };
 
